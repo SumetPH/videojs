@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VideoJS</title>
+    <link href="https://vjs.zencdn.net/7.8.3/video-js.css" rel="stylesheet" />
+    <script src="https://vjs.zencdn.net/7.8.3/video.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.js"></script>
+    <style>
+      body {
+        padding: 0px;
+        margin: 0px;
+      }
+      #input-container {
+        display: flex;
+        height: 100vh;
+        justify-content: center;
+        align-items: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="input-container">
+      <input type="file" id="file" />
+    </div>
+    <div id="video-container" style="display: none;">
+      <video
+        id="video-player"
+        class="video-js"
+        controls
+        style="width: 100%; height: 100vh;"
+      ></video>
+    </div>
+    <script>
+      var videoPlayer = videojs("video-player");
+      var file = null;
+
+      // new tab hook
+      $(window).on("load", function () {
+        // file changed
+        $("#file").change(function (e) {
+          e.preventDefault();
+
+          // set valuable
+          file = e.target.files[0];
+
+          // show video
+          $("#video-container").css("display", "block");
+
+          // hide input
+          $("#input-container").css("display", "none");
+
+          // setup video
+          videoPlayer.src({
+            src: URL.createObjectURL(file),
+            type: "video/mp4",
+          });
+
+          // check current time of video
+          if (localStorage.getItem(file.name)) {
+            if (confirm("คุณต้องการเล่นต่อจากเดิมหรือไม่")) {
+              videoPlayer.currentTime(localStorage.getItem(file.name));
+            }
+            videoPlayer.autoplay(true);
+          }
+        });
+      });
+
+      //pause player
+      videoPlayer.on("pause", function () {
+        // save current time of video
+        localStorage.setItem(file.name, videoPlayer.currentTime());
+      });
+
+      //end player
+      videoPlayer.on("ended", function () {
+        // save current time of video
+        localStorage.removeItem(file.name);
+      });
+
+      //close tab hook
+      $(window).on("beforeunload", function () {
+        // save current time of video
+        if (file != null && localStorage.getItem(file.name)) {
+          localStorage.setItem(file.name, videoPlayer.currentTime());
+        }
+      });
+    </script>
+  </body>
+</html>
